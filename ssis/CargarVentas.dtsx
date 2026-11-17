@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DTS:Executable DTS:VersionMajor="1" DTS:PackageType="5" DTS:DTSID="{8E360225-CC35-4056-8011-6F787092D2C2}" DTS:LocaleID="3082" DTS:ProtectionLevel="0" DTS:MaxConcurrentExecutables="1" DTS:VersionMinor="0" DTS:ObjectName="CargarVentas" DTS:ExecutableType="Microsoft.Package" DTS:VersionGUID="{B8142163-6128-48D0-9C41-1CE87DA502AB}" DTS:CreationName="Microsoft.Package" DTS:DelayValidation="False" DTS:refId="Package" DTS:Description="ETL de ventas con tareas Execute SQL y transformacion T-SQL" DTS:MaximumErrorCount="1" xmlns:DTS="www.microsoft.com/SqlServer/Dts">
+  <DTS:Property DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:DTSID="{B2D2B4C9-5B72-4B0C-80D6-2248EF642A6B}" DTS:refId="Package.ConnectionManagers[Laboratorio]" DTS:ObjectName="Laboratorio" DTS:CreationName="OLEDB">
+      <DTS:PropertyExpression DTS:Name="ConnectionString">@[User::ConnectionString]</DTS:PropertyExpression>
+      <DTS:ObjectData>
+        <DTS:ConnectionManager DTS:ConnectionString="Provider=MSOLEDBSQL;Data Source=localhost;Initial Catalog=ClaudeETLLab;Integrated Security=SSPI;Use Encryption for Data=True;Trust Server Certificate=False;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables>
+    <DTS:Variable DTS:DTSID="{8FE52397-6177-4833-92F5-C4276ABF9E36}" DTS:Namespace="User" DTS:ObjectName="Archivo">
+      <DTS:VariableValue DTS:DataType="8">C:\LabSSIS\data\ventas.csv</DTS:VariableValue>
+    </DTS:Variable>
+    <DTS:Variable DTS:DTSID="{89DBCED3-D486-4FA1-A91E-D64832588DAF}" DTS:Namespace="User" DTS:ObjectName="ConnectionString">
+      <DTS:VariableValue DTS:DataType="8">Provider=MSOLEDBSQL;Data Source=localhost;Initial Catalog=ClaudeETLLab;Integrated Security=SSPI;Use Encryption for Data=True;Trust Server Certificate=False;</DTS:VariableValue>
+    </DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable DTS:DTSID="{5E40DE96-61B8-4C34-92E5-58BCA9BCDBA2}" DTS:LocaleID="3082" DTS:ObjectName="ComprobarEntorno" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:TransactionOption="1" DTS:CreationName="Microsoft.ExecuteSQLTask" DTS:refId="Package\ComprobarEntorno" DTS:FailPackageOnFailure="True">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData SQLTask:SqlStatementSource="IF DB_NAME()&lt;&gt;N'ClaudeETLLab' THROW 51010,'Base de datos incorrecta.',1; IF OBJECT_ID(N'dbo.usp_CargarVentas',N'P') IS NULL THROW 51011,'Ejecuta primero los scripts de preparacion.',1;" SQLTask:TimeOut="120" SQLTask:BypassPrepare="True" SQLTask:ResultType="ResultSetType_None" SQLTask:Connection="{B2D2B4C9-5B72-4B0C-80D6-2248EF642A6B}" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable DTS:DTSID="{8F9D11FB-A2D0-43AD-9C84-A91898EF5379}" DTS:LocaleID="3082" DTS:ObjectName="CargarVentas" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:TransactionOption="1" DTS:CreationName="Microsoft.ExecuteSQLTask" DTS:refId="Package\CargarVentas" DTS:FailPackageOnFailure="True">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData SQLTask:SqlStatementSource="EXEC dbo.usp_CargarVentas @Archivo = ?;" SQLTask:TimeOut="120" SQLTask:BypassPrepare="True" SQLTask:ResultType="ResultSetType_None" SQLTask:Connection="{B2D2B4C9-5B72-4B0C-80D6-2248EF642A6B}" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask">
+          <SQLTask:ParameterBinding SQLTask:ParameterName="0" SQLTask:DtsVariableName="User::Archivo" SQLTask:DataType="130" SQLTask:ParameterSize="4000" SQLTask:ParameterDirection="Input" />
+        </SQLTask:SqlTaskData>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable DTS:DTSID="{2D1F13C7-8326-44ED-8B1A-402E9B59CF63}" DTS:LocaleID="3082" DTS:ObjectName="ComprobarBalance" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:TransactionOption="1" DTS:CreationName="Microsoft.ExecuteSQLTask" DTS:refId="Package\ComprobarBalance" DTS:FailPackageOnFailure="True">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData SQLTask:SqlStatementSource="IF EXISTS(SELECT 1 FROM dbo.Ejecuciones WHERE Estado='CORRECTA' AND (Leidas&lt;&gt;Aceptadas+Rechazadas OR Insertadas+Actualizadas&gt;Aceptadas)) THROW 51012,'Balance de filas incorrecto.',1;" SQLTask:TimeOut="120" SQLTask:BypassPrepare="True" SQLTask:ResultType="ResultSetType_None" SQLTask:Connection="{B2D2B4C9-5B72-4B0C-80D6-2248EF642A6B}" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Flujo0]" DTS:LogicalAnd="True" DTS:From="Package\ComprobarEntorno" DTS:To="Package\CargarVentas" DTS:Value="0" DTS:DTSID="{F020DC13-FC39-4E3E-8F35-DB55C2B71B67}" DTS:ObjectName="Flujo0" />
+    <DTS:PrecedenceConstraint DTS:refId="Package.PrecedenceConstraints[Flujo1]" DTS:LogicalAnd="True" DTS:From="Package\CargarVentas" DTS:To="Package\ComprobarBalance" DTS:Value="0" DTS:DTSID="{F9BF1E52-3AD6-4937-8073-2D76E998F76B}" DTS:ObjectName="Flujo1" />
+  </DTS:PrecedenceConstraints>
+</DTS:Executable>

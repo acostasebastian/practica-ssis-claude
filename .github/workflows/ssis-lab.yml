@@ -1,0 +1,30 @@
+name: SSIS laboratorio
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ssis-laboratorio
+  cancel-in-progress: false
+jobs:
+  integrar:
+    name: Integracion SSIS aislada
+    if: github.ref == 'refs/heads/main'
+    # Practica individual: restringir a main, sin Required reviewers.
+    # Si el plan no permite esa restriccion, ejecutar la prueba localmente.
+    environment: ssis-lab
+    runs-on: [self-hosted, Windows, X64, ssis-lab]
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Descargar el commit seleccionado de main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Comprobar estructura
+        run: ./tests/Test-Estatico.ps1
+      - name: Probar el paquete con SQL Server y SSIS
+        run: ./tests/Test-Integracion.ps1
