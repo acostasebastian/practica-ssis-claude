@@ -13,7 +13,7 @@ Describe el comportamiento esperado de `dbo.usp_CargarVentas` (`sql/02_Procedimi
 |---|---|---|
 | VentaId | Entero positivo | `VentaId invalido` |
 | Fecha | Formato exacto `yyyy-MM-dd` | `Fecha invalida` |
-| Cliente | Obligatorio tras quitar espacios; máximo 100 caracteres | `Cliente invalido` |
+| Cliente | Obligatorio tras quitar espacios; máximo 100 caracteres. Se guarda en MAYÚSCULAS conservando acentos (`María` → `MARÍA`) | `Cliente invalido` |
 | Cantidad | Entero de 1 a 100000 | `Cantidad invalida` |
 | Precio | De 0.01 a 1000000, punto decimal, hasta dos decimales | `Precio invalido` |
 | Clave | Si un VentaId aparece más de una vez en el archivo, se rechazan todas sus apariciones | `VentaId duplicado en el archivo` |
@@ -24,6 +24,8 @@ Si una fila incumple varias reglas, se registra un único motivo: el primero seg
 - `Importe = Cantidad * Precio`, almacenado como `decimal(18,2)`.
 - Las ventas nuevas se insertan.
 - Las ventas existentes se actualizan solo si cambia algún dato (Fecha, Cliente, Cantidad o Precio). Una recarga idéntica produce 0 insertadas y 0 actualizadas.
+- Cliente se normaliza con `UPPER` sobre el valor sin espacios, con intercalación `Latin1_General_100_CI_AS`. El staging conserva el valor original.
+- Al desplegar esta regla sobre una base con datos, la primera recarga actualiza las ventas cuyo Cliente no estaba en mayúsculas; las siguientes dan 0 actualizadas.
 
 ## Trazabilidad
 - Cada ejecución queda en `dbo.Ejecuciones` con Leidas, Aceptadas, Rechazadas, Insertadas y Actualizadas.

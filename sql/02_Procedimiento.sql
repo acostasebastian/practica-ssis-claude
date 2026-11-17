@@ -46,7 +46,8 @@ BEGIN
   SET @Leidas=@@ROWCOUNT;
 
   SELECT s.Fila, TRY_CONVERT(int,TRIM(VentaIdRaw)) VentaId,
-    TRY_CONVERT(date,TRIM(FechaRaw),23) Fecha, TRIM(ClienteRaw) Cliente,
+    TRY_CONVERT(date,TRIM(FechaRaw),23) Fecha,
+    UPPER(TRIM(ClienteRaw) COLLATE Latin1_General_100_CI_AS) Cliente,
     TRY_CONVERT(int,TRIM(CantidadRaw)) Cantidad,
     TRY_CONVERT(decimal(12,2),TRIM(PrecioRaw)) Precio,
     TRIM(FechaRaw) FechaTexto, TRIM(PrecioRaw) PrecioTexto
